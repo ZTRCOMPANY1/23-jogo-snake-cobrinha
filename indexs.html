@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Snake — Jogo da Cobrinha</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <h1>Snake — Jogo da Cobrinha</h1>
+    <div class="controls">
+      <div class="player-info" id="playerInfo" aria-hidden="true" style="display:none;">
+        Jogador: <span id="playerName">—</span>
+      </div>
+      <div class="score">Pontos: <span id="score">0</span></div>
+      <div class="best">Recorde: <span id="best">0</span></div>
+      <button id="btnStart">Iniciar</button>
+      <button id="btnPause">Pausar</button>
+      <button id="btnReset">Reiniciar</button>
+      <button id="btnResetRecord" title="Zerar recorde do jogador">Zerar Recorde</button>
+      <button id="btnSettings" title="Configurações">⚙️</button>
+      <button id="btnLeaderboard" title="Leaderboard">🏆</button>
+      <select id="langSelect" aria-label="Idioma">
+        <option value="pt-BR">🇧🇷 Português</option>
+        <option value="en-US">🇺🇸 English</option>
+        <option value="es-ES">🇪🇸 Español</option>
+      </select>
+      <button id="btnLogout" style="display:none">Logout</button>
+    </div>
+  </header>
+
+  <section class="game-area">
+    <canvas id="gameCanvas" width="480" height="480" aria-label="Canvas do jogo da cobrinha"></canvas>
+    <aside class="instructions">
+      <h2>Como jogar</h2>
+      <ul>
+        <li>Use as setas do teclado ou WASD para mover.</li>
+        <li>Toque e arraste (swipe) em celulares.</li>
+        <li>Coma frutas para ganhar pontos — a cobra cresce.</li>
+        <li>Pausa: botão Pausar ou tecla <kbd>Space</kbd>.</li>
+      </ul>
+      <hr />
+      <div>
+        <strong>Nível:</strong> <span id="uiLevel">Normal</span><br/>
+        <strong>Skin:</strong> <span id="uiSkin">Neon</span><br/>
+        <strong>Modo difícil:</strong> <span id="uiHard">Desligado</span>
+      </div>
+    </aside>
+  </section>
+
+  <footer class="footer">Feito com ❤️ — peça personalizações se quiser</footer>
+</main>
+
+<!-- Overlays and modals (same as before) -->
+<div id="authOverlay" class="auth-overlay" aria-hidden="false">
+  <div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <h2 id="authTitle">Entrar no Snake</h2>
+
+    <div class="tabs">
+      <button id="tabLogin" class="tab active">Login</button>
+      <button id="tabCreate" class="tab">Criar Conta</button>
+    </div>
+
+    <form id="formLogin" class="auth-form">
+      <label>
+        Usuário
+        <input id="loginUser" type="text" autocomplete="username" required />
+      </label>
+      <label>
+        Senha
+        <input id="loginPass" type="password" autocomplete="current-password" required />
+      </label>
+      <div class="auth-actions">
+        <button type="submit" class="btn-neon" id="btnLoginSubmit">Entrar</button>
+      </div>
+      <p class="auth-note">Se você ainda não tem conta, clique em <strong>Criar Conta</strong>.</p>
+    </form>
+
+    <form id="formCreate" class="auth-form hidden">
+      <label>
+        Usuário (mín 3 caracteres)
+        <input id="createUser" type="text" autocomplete="username" minlength="3" required />
+      </label>
+      <label>
+        Senha (mín 4 caracteres)
+        <input id="createPass" type="password" autocomplete="new-password" minlength="4" required />
+      </label>
+      <label>
+        Confirmar Senha
+        <input id="createPass2" type="password" autocomplete="new-password" minlength="4" required />
+      </label>
+      <div class="auth-actions">
+        <button type="submit" class="btn-neon" id="btnCreateSubmit">Criar Conta</button>
+      </div>
+      <p class="auth-note">A conta será salva no servidor (quando configurado).</p>
+    </form>
+
+    <div id="authMessage" class="auth-message" aria-live="polite"></div>
+  </div>
+  <div class="auth-backdrop"></div>
+</div>
+
+<div id="settingsModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <h3 id="settingsTitle">Configurações</h3>
+    <div class="modal-row">
+      <label>
+        Nível
+        <select id="selectLevel">
+          <option value="easy">Fácil</option>
+          <option value="normal" selected>Normal</option>
+          <option value="hard">Difícil</option>
+        </select>
+      </label>
+      <label>
+        Modo difícil (sem wrap)
+        <input id="toggleHardMode" type="checkbox" />
+      </label>
+    </div>
+    <div class="modal-row">
+      <label>
+        Skin
+        <select id="selectSkin">
+          <option value="neon">Neon</option>
+          <option value="sunset">Sunset</option>
+          <option value="ocean">Ocean</option>
+        </select>
+      </label>
+      <label>
+        Som
+        <input id="toggleSound" type="checkbox" checked />
+      </label>
+    </div>
+    <div class="modal-row">
+      <label>
+        Volume
+        <input id="volumeRange" type="range" min="0" max="1" step="0.05" value="0.6" />
+      </label>
+      <label>
+        Barras/Obstáculos
+        <input id="toggleBarriers" type="checkbox" />
+      </label>
+    </div>
+
+    <div class="modal-actions">
+      <button id="btnSaveSettings" class="btn-neon">Salvar</button>
+      <button id="btnCloseSettings">Fechar</button>
+    </div>
+  </div>
+  <div class="modal-backdrop"></div>
+</div>
+
+<div id="leaderModal" class="modal hidden" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="leaderTitle">
+    <h3 id="leaderTitle">Leaderboard (Top 100)</h3>
+    <div id="leaderList" class="leader-list"></div>
+    <div class="modal-actions">
+      <button id="btnClearLeader" class="btn-neon">Limpar Leaderboard (local)</button>
+      <button id="btnCloseLeader">Fechar</button>
+    </div>
+  </div>
+  <div class="modal-backdrop"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
